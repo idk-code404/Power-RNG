@@ -1,0 +1,1578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infinite Power Level Roller - Mining & Crafting</title>
+    <style>
+        :root {
+            --primary: #6a11cb;
+            --secondary: #2575fc;
+            --success: #00b09b;
+            --warning: #ff9a00;
+            --danger: #ff416c;
+            --epic: #c471ed;
+            --legendary: #f64f59;
+            --mythic: #12c2e9;
+            --divine: #fdeff9;
+            --cosmic: #ffd700;
+            --universal: #7b00ff;
+            --multiversal: #ff00ff;
+            --omnipotent: #ffffff;
+            --infinite: #00ff00;
+            --dark: #1a1a2e;
+            --light: #f8f9fa;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--dark), #16213e);
+            color: var(--light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            width: 100%;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, var(--primary), var(--secondary), var(--epic), var(--legendary), var(--cosmic), var(--infinite));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .tab.active {
+            background: var(--primary);
+        }
+        
+        .tab:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .tab-content {
+            display: none;
+            width: 100%;
+        }
+        
+        .tab-content.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .difficulty-notice {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid rgba(255, 0, 0, 0.5);
+            border-radius: 10px;
+            padding: 10px 15px;
+            margin: 15px 0;
+            text-align: center;
+            max-width: 500px;
+        }
+        
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            gap: 30px;
+        }
+        
+        .roll-display {
+            width: 320px;
+            height: 320px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #1e1e3a, #232347);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            border: 5px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .roll-display.rolling {
+            animation: pulse 0.5s infinite alternate;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.05); }
+        }
+        
+        .power-level {
+            font-size: 2.2rem;
+            font-weight: bold;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+            text-align: center;
+            padding: 0 10px;
+        }
+        
+        .power-tier {
+            font-size: 1.2rem;
+            margin-top: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-align: center;
+        }
+        
+        .power-bar-container {
+            width: 90%;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+        
+        .power-bar {
+            height: 100%;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            border-radius: 10px;
+            width: 0%;
+            transition: width 1s ease;
+        }
+        
+        .roll-btn {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        
+        .roll-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .roll-btn:active {
+            transform: translateY(1px);
+        }
+        
+        .roll-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .mine-btn {
+            background: linear-gradient(to right, #8B4513, #A0522D);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            font-weight: bold;
+            letter-spacing: 1px;
+            margin-top: 10px;
+        }
+        
+        .mine-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .mine-btn:active {
+            transform: translateY(1px);
+        }
+        
+        .mine-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .stat-box {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            flex: 1;
+            margin: 0 10px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        
+        .history {
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .history-title {
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+        
+        .history-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            max-height: 150px;
+            overflow-y: auto;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        
+        .history-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .luck-charms {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .charm-category {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+        }
+        
+        .category-title {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--warning);
+        }
+        
+        .charm {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            margin-bottom: 8px;
+            justify-content: space-between;
+        }
+        
+        .charm:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .charm:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .charm-icon {
+            font-size: 1.2rem;
+        }
+        
+        .charm-cost {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+        }
+        
+        .crafting-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .materials-section, .recipes-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        .materials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .material-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .material-icon {
+            font-size: 2rem;
+        }
+        
+        .material-count {
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .recipes-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .recipe {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .recipe-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .recipe-icon {
+            font-size: 1.5rem;
+        }
+        
+        .recipe-materials {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .material-cost {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 5px 10px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .material-cost.insufficient {
+            background: rgba(255, 0, 0, 0.3);
+        }
+        
+        .craft-btn {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        
+        .craft-btn:hover:not(:disabled) {
+            background: #00a085;
+            transform: translateY(-2px);
+        }
+        
+        .craft-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .mining-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .mine-display {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #5D4037, #8D6E63);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            border: 5px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .mine-icon {
+            font-size: 4rem;
+        }
+        
+        .mine-stats {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .mine-stat {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+        }
+        
+        .tier-0 { color: #b0b0b0; }
+        .tier-1 { color: #4cd964; }
+        .tier-2 { color: #5ac8fa; }
+        .tier-3 { color: #ffcc00; }
+        .tier-4 { color: #ff9500; }
+        .tier-5 { color: #ff3b30; }
+        .tier-6 { color: #ff2d55; text-shadow: 0 0 10px rgba(255, 45, 85, 0.7); }
+        .tier-7 { color: #c471ed; text-shadow: 0 0 10px rgba(196, 113, 237, 0.7); }
+        .tier-8 { color: #f64f59; text-shadow: 0 0 10px rgba(246, 79, 89, 0.7); }
+        .tier-9 { color: #12c2e9; text-shadow: 0 0 10px rgba(18, 194, 233, 0.7); }
+        .tier-10 { color: #ffd700; text-shadow: 0 0 15px rgba(255, 215, 0, 0.9); }
+        .tier-11 { color: #7b00ff; text-shadow: 0 0 15px rgba(123, 0, 255, 0.9); }
+        .tier-12 { color: #ff00ff; text-shadow: 0 0 20px rgba(255, 0, 255, 0.9); }
+        .tier-13 { color: #ffffff; text-shadow: 0 0 25px rgba(255, 255, 255, 1); }
+        .tier-14 { color: #00ff00; text-shadow: 0 0 30px rgba(0, 255, 0, 1); animation: infiniteGlow 2s infinite alternate; }
+        
+        @keyframes infiniteGlow {
+            0% { text-shadow: 0 0 20px rgba(0, 255, 0, 0.7); }
+            100% { text-shadow: 0 0 40px rgba(0, 255, 0, 1), 0 0 60px rgba(0, 255, 0, 0.8); }
+        }
+        
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            opacity: 0;
+        }
+        
+        .currency-display {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 10px;
+        }
+        
+        .currency {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 15px;
+            border-radius: 20px;
+        }
+        
+        .currency-icon {
+            font-size: 1.2rem;
+        }
+        
+        .achievement-toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            border-left: 5px solid var(--warning);
+            transform: translateX(120%);
+            transition: transform 0.5s ease;
+            z-index: 1000;
+        }
+        
+        .achievement-toast.show {
+            transform: translateX(0);
+        }
+        
+        .scale-info {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            opacity: 0.7;
+            text-align: center;
+        }
+        
+        .luck-boost {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 215, 0, 0.2);
+            border: 1px solid rgba(255, 215, 0, 0.5);
+            border-radius: 10px;
+            padding: 5px 10px;
+            font-size: 0.8rem;
+        }
+        
+        @media (max-width: 768px) {
+            .roll-display {
+                width: 280px;
+                height: 280px;
+            }
+            
+            .power-level {
+                font-size: 1.8rem;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .stat-box {
+                margin: 0;
+            }
+            
+            .luck-charms {
+                grid-template-columns: 1fr;
+            }
+            
+            .crafting-area {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .roll-display {
+                width: 240px;
+                height: 240px;
+            }
+            
+            .power-level {
+                font-size: 1.5rem;
+            }
+            
+            .power-tier {
+                font-size: 1rem;
+            }
+            
+            .roll-btn {
+                padding: 12px 30px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Infinite Power Level Roller - Mining & Crafting</h1>
+            <p>Mine for materials, craft powerful charms, and reach INFINITE power!</p>
+            <div class="difficulty-notice">
+                <strong>Warning:</strong> High power levels are extremely rare. Mine materials to craft powerful charms!
+            </div>
+        </header>
+        
+        <div class="tabs">
+            <button class="tab active" data-tab="rolling">Rolling</button>
+            <button class="tab" data-tab="mining">Mining</button>
+            <button class="tab" data-tab="crafting">Crafting</button>
+            <button class="tab" data-tab="charms">Charms</button>
+        </div>
+        
+        <div class="currency-display">
+            <div class="currency">
+                <span class="currency-icon">🎲</span>
+                <span id="rollCount">0</span>
+            </div>
+            <div class="currency">
+                <span class="currency-icon">⛏️</span>
+                <span id="mineCount">0</span>
+            </div>
+        </div>
+        
+        <!-- Rolling Tab -->
+        <div class="tab-content active" id="rolling-tab">
+            <div class="game-area">
+                <div class="roll-display" id="rollDisplay">
+                    <div class="luck-boost" id="luckBoost" style="display: none;">Luck: +0%</div>
+                    <div class="power-level" id="powerLevel">-</div>
+                    <div class="power-tier" id="powerTier">Ready to Roll</div>
+                    <div class="power-bar-container">
+                        <div class="power-bar" id="powerBar"></div>
+                    </div>
+                    <div class="particles" id="particles"></div>
+                </div>
+                
+                <button class="roll-btn" id="rollBtn">ROLL FOR INFINITE POWER</button>
+                
+                <div class="stats">
+                    <div class="stat-box">
+                        <div>Highest Roll</div>
+                        <div class="stat-value" id="highestRoll">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div>Total Rolls</div>
+                        <div class="stat-value" id="totalRolls">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div>Average Power</div>
+                        <div class="stat-value" id="averagePower">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div>Luck Multiplier</div>
+                        <div class="stat-value" id="luckMultiplier">x1.0</div>
+                    </div>
+                </div>
+                
+                <div class="history">
+                    <div class="history-title">Roll History</div>
+                    <div class="history-list" id="historyList"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mining Tab -->
+        <div class="tab-content" id="mining-tab">
+            <div class="mining-area">
+                <div class="mine-display" id="mineDisplay">
+                    <div class="mine-icon">⛏️</div>
+                    <div id="mineResult">Ready to Mine</div>
+                </div>
+                
+                <button class="mine-btn" id="mineBtn">MINE FOR MATERIALS</button>
+                
+                <div class="mine-stats">
+                    <div class="mine-stat">
+                        <div>Mining Level</div>
+                        <div class="stat-value" id="miningLevel">1</div>
+                    </div>
+                    <div class="mine-stat">
+                        <div>Total Mines</div>
+                        <div class="stat-value" id="totalMines">0</div>
+                    </div>
+                </div>
+                
+                <div class="materials-section" style="width: 100%; max-width: 600px;">
+                    <h3>Your Materials</h3>
+                    <div class="materials-grid" id="materialsGrid">
+                        <!-- Materials will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Crafting Tab -->
+        <div class="tab-content" id="crafting-tab">
+            <div class="crafting-area">
+                <div class="materials-section">
+                    <h3>Materials</h3>
+                    <div class="materials-grid" id="craftingMaterialsGrid">
+                        <!-- Materials will be populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <div class="recipes-section">
+                    <h3>Recipes</h3>
+                    <div class="recipes-list" id="recipesList">
+                        <!-- Recipes will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Charms Tab -->
+        <div class="tab-content" id="charms-tab">
+            <div class="luck-charms">
+                <div class="charm-category">
+                    <div class="category-title">Basic Charms</div>
+                    <button class="charm" id="luckyCoin">
+                        <span class="charm-icon">🪙</span> Lucky Coin
+                        <span class="charm-cost" id="luckyCoinCost">3🪙 1🔸</span>
+                    </button>
+                    <button class="charm" id="fourLeafClover">
+                        <span class="charm-icon">🍀</span> Four-Leaf Clover
+                        <span class="charm-cost" id="fourLeafCloverCost">4🍀 1🐇</span>
+                    </button>
+                    <button class="charm" id="rabbitsFoot">
+                        <span class="charm-icon">🐇</span> Rabbit's Foot
+                        <span class="charm-cost" id="rabbitsFootCost">3🐇 1🟨</span>
+                    </button>
+                </div>
+                
+                <div class="charm-category">
+                    <div class="category-title">Advanced Charms</div>
+                    <button class="charm" id="horseshoe">
+                        <span class="charm-icon">🐎</span> Lucky Horseshoe
+                        <span class="charm-cost" id="horseshoeCost">2🐎 2🔸 1🟨</span>
+                    </button>
+                    <button class="charm" id="dice">
+                        <span class="charm-icon">🎲</span> Loaded Dice
+                        <span class="charm-cost" id="diceCost">6⚫ 2🟨 1🌌</span>
+                    </button>
+                    <button class="charm" id="wishbone">
+                        <span class="charm-icon">🦴</span> Lucky Wishbone
+                        <span class="charm-cost" id="wishboneCost">1🦴 3🟨 2🌌</span>
+                    </button>
+                </div>
+                
+                <div class="charm-category">
+                    <div class="category-title">Cosmic Charms</div>
+                    <button class="charm" id="infinityStone">
+                        <span class="charm-icon">💎</span> Infinity Stone
+                        <span class="charm-cost" id="infinityStoneCost">5🌌 1🔥 3✨</span>
+                    </button>
+                    <button class="charm" id="phoenixFeather">
+                        <span class="charm-icon">🔥</span> Phoenix Feather
+                        <span class="charm-cost" id="phoenixFeatherCost">3🔥 5✨ 3🌌</span>
+                    </button>
+                    <button class="charm" id="wish">
+                        <span class="charm-icon">🌠</span> Cosmic Wish
+                        <span class="charm-cost" id="wishCost">10✨ 5🔥 7🌌 5🟨</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="achievement-toast" id="achievementToast">
+        <div class="achievement-title" id="achievementTitle">Achievement Unlocked!</div>
+        <div class="achievement-desc" id="achievementDesc">You rolled over 90 for the first time!</div>
+    </div>
+
+    <script>
+        // Game state
+        const gameState = {
+            currentPower: 0,
+            highestPower: 0,
+            totalRolls: 0,
+            totalMines: 0,
+            totalPower: 0,
+            rollHistory: [],
+            isRolling: false,
+            isMining: false,
+            miningLevel: 1,
+            luckMultiplier: 1.0,
+            activeCharms: [],
+            materials: {
+                copperCoin: 5,
+                silverShard: 2,
+                goldNugget: 0,
+                cloverLeaf: 3,
+                rabbitFur: 1,
+                horseshoeNail: 0,
+                diceSpot: 2,
+                wishboneFragment: 0,
+                cosmicEssence: 0,
+                phoenixAsh: 0,
+                stardust: 0
+            },
+            achievements: {
+                firstRoll: false,
+                firstMine: false,
+                over100: false,
+                over1K: false,
+                over1M: false,
+                over1B: false,
+                over1T: false,
+                over1Q: false,
+                over1Qi: false,
+                over1Sx: false,
+                over1Sp: false,
+                over1Oc: false,
+                over1No: false,
+                over1Dc: false,
+                over1Ud: false,
+                over1Dd: false,
+                over1Td: false,
+                infinite: false
+            }
+        };
+
+        // Power tiers with exponential scaling
+        const POWER_TIERS = [
+            { min: 0, max: 10, name: "Mortal", class: "tier-0", probability: 0.50 },
+            { min: 11, max: 100, name: "Enhanced", class: "tier-1", probability: 0.30 },
+            { min: 101, max: 1000, name: "Superhuman", class: "tier-2", probability: 0.15 },
+            { min: 1001, max: 10000, name: "Heroic", class: "tier-3", probability: 0.03 },
+            { min: 10001, max: 100000, name: "Epic", class: "tier-4", probability: 0.01 },
+            { min: 100001, max: 1000000, name: "Legendary", class: "tier-5", probability: 0.005 },
+            { min: 1000001, max: 10000000, name: "Mythic", class: "tier-6", probability: 0.001 },
+            { min: 10000001, max: 100000000, name: "Divine", class: "tier-7", probability: 0.0005 },
+            { min: 100000001, max: 1000000000, name: "Cosmic", class: "tier-8", probability: 0.0001 },
+            { min: 1000000001, max: 1000000000000, name: "Universal", class: "tier-9", probability: 0.00001 },
+            { min: 1000000000001, max: 1e15, name: "Multiversal", class: "tier-10", probability: 0.000001 },
+            { min: 1e15+1, max: 1e18, name: "Omnipotent", class: "tier-11", probability: 0.0000001 },
+            { min: 1e18+1, max: 1e21, name: "Beyond", class: "tier-12", probability: 0.00000001 },
+            { min: 1e21+1, max: 1e24, name: "Transcendent", class: "tier-13", probability: 0.000000001 },
+            { min: 1e24+1, max: Infinity, name: "INFINITE", class: "tier-14", probability: 0.0000000001 }
+        ];
+
+        // Luck charms with their effects
+        const LUCK_CHARMS = {
+            luckyCoin: { 
+                effect: { luckMultiplier: 1.5, duration: 1 },
+                description: "+50% luck for your next roll",
+                materials: { copperCoin: 3, silverShard: 1 }
+            },
+            fourLeafClover: { 
+                effect: { luckMultiplier: 2.0, duration: 1 },
+                description: "+100% luck for your next roll",
+                materials: { cloverLeaf: 4, rabbitFur: 1 }
+            },
+            rabbitsFoot: { 
+                effect: { luckMultiplier: 3.0, duration: 1 },
+                description: "+200% luck for your next roll",
+                materials: { rabbitFur: 3, goldNugget: 1 }
+            },
+            horseshoe: { 
+                effect: { luckMultiplier: 5.0, duration: 3 },
+                description: "+400% luck for your next 3 rolls",
+                materials: { horseshoeNail: 2, silverShard: 2, goldNugget: 1 }
+            },
+            dice: { 
+                effect: { luckMultiplier: 10.0, duration: 2 },
+                description: "+900% luck for your next 2 rolls",
+                materials: { diceSpot: 6, goldNugget: 2, cosmicEssence: 1 }
+            },
+            wishbone: { 
+                effect: { luckMultiplier: 25.0, duration: 1 },
+                description: "+2400% luck for your next roll",
+                materials: { wishboneFragment: 1, goldNugget: 3, cosmicEssence: 2 }
+            },
+            infinityStone: { 
+                effect: { luckMultiplier: 100.0, duration: 5 },
+                description: "+9900% luck for your next 5 rolls",
+                materials: { cosmicEssence: 5, phoenixAsh: 1, stardust: 3 }
+            },
+            phoenixFeather: { 
+                effect: { luckMultiplier: 1000.0, duration: 3 },
+                description: "+99900% luck for your next 3 rolls",
+                materials: { phoenixAsh: 3, stardust: 5, cosmicEssence: 3 }
+            },
+            wish: { 
+                effect: { luckMultiplier: 1000000.0, duration: 1 },
+                description: "Virtually guarantees INFINITE power for your next roll",
+                materials: { stardust: 10, phoenixAsh: 5, cosmicEssence: 7, goldNugget: 5 }
+            }
+        };
+
+        // Material information
+        const MATERIALS = {
+            copperCoin: { name: "Copper Coin", icon: "🪙", description: "Common currency with a hint of luck" },
+            silverShard: { name: "Silver Shard", icon: "🔸", description: "Refined silver with mystical properties" },
+            goldNugget: { name: "Gold Nugget", icon: "🟨", description: "Pure gold infused with cosmic energy" },
+            cloverLeaf: { name: "Clover Leaf", icon: "🍀", description: "A rare four-leaf clover petal" },
+            rabbitFur: { name: "Rabbit Fur", icon: "🐇", description: "Soft fur from a lucky rabbit" },
+            horseshoeNail: { name: "Horseshoe Nail", icon: "🐎", description: "A nail from a blessed horseshoe" },
+            diceSpot: { name: "Dice Spot", icon: "⚫", description: "The essence of a perfect dice roll" },
+            wishboneFragment: { name: "Wishbone Fragment", icon: "🦴", description: "A piece of a magical wishbone" },
+            cosmicEssence: { name: "Cosmic Essence", icon: "🌌", description: "Pure energy from the cosmos" },
+            phoenixAsh: { name: "Phoenix Ash", icon: "🔥", description: "Ashes from a reborn phoenix" },
+            stardust: { name: "Stardust", icon: "✨", description: "Dust from distant stars" }
+        };
+
+        // Mining probabilities based on mining level
+        const MINING_PROBABILITIES = {
+            1: { copperCoin: 0.8, cloverLeaf: 0.5, rabbitFur: 0.3 },
+            2: { copperCoin: 0.7, silverShard: 0.4, cloverLeaf: 0.6, rabbitFur: 0.4 },
+            3: { copperCoin: 0.6, silverShard: 0.5, goldNugget: 0.2, cloverLeaf: 0.5, rabbitFur: 0.5, diceSpot: 0.3 },
+            4: { silverShard: 0.6, goldNugget: 0.3, rabbitFur: 0.4, diceSpot: 0.4, horseshoeNail: 0.2 },
+            5: { goldNugget: 0.4, diceSpot: 0.5, horseshoeNail: 0.3, wishboneFragment: 0.2, cosmicEssence: 0.1 },
+            6: { horseshoeNail: 0.4, wishboneFragment: 0.3, cosmicEssence: 0.2, phoenixAsh: 0.1 },
+            7: { wishboneFragment: 0.4, cosmicEssence: 0.3, phoenixAsh: 0.2, stardust: 0.1 },
+            8: { cosmicEssence: 0.4, phoenixAsh: 0.3, stardust: 0.2 },
+            9: { phoenixAsh: 0.4, stardust: 0.3 },
+            10: { phoenixAsh: 0.5, stardust: 0.4 }
+        };
+
+        // DOM elements
+        const rollDisplay = document.getElementById('rollDisplay');
+        const powerLevel = document.getElementById('powerLevel');
+        const powerTier = document.getElementById('powerTier');
+        const powerBar = document.getElementById('powerBar');
+        const rollBtn = document.getElementById('rollBtn');
+        const mineBtn = document.getElementById('mineBtn');
+        const mineDisplay = document.getElementById('mineDisplay');
+        const mineResult = document.getElementById('mineResult');
+        const highestRoll = document.getElementById('highestRoll');
+        const totalRolls = document.getElementById('totalRolls');
+        const totalMines = document.getElementById('totalMines');
+        const mineCount = document.getElementById('mineCount');
+        const miningLevel = document.getElementById('miningLevel');
+        const averagePower = document.getElementById('averagePower');
+        const luckMultiplier = document.getElementById('luckMultiplier');
+        const historyList = document.getElementById('historyList');
+        const rollCount = document.getElementById('rollCount');
+        const luckBoost = document.getElementById('luckBoost');
+        const achievementToast = document.getElementById('achievementToast');
+        const achievementTitle = document.getElementById('achievementTitle');
+        const achievementDesc = document.getElementById('achievementDesc');
+        const materialsGrid = document.getElementById('materialsGrid');
+        const craftingMaterialsGrid = document.getElementById('craftingMaterialsGrid');
+        const recipesList = document.getElementById('recipesList');
+
+        // Initialize the game
+        function initGame() {
+            updateStats();
+            updateCharms();
+            updateMaterialsDisplay();
+            updateRecipesDisplay();
+            setupTabs();
+            
+            // Event listeners for charms
+            Object.keys(LUCK_CHARMS).forEach(charmId => {
+                document.getElementById(charmId).addEventListener('click', () => useCharm(charmId));
+            });
+            
+            rollBtn.addEventListener('click', rollForPower);
+            mineBtn.addEventListener('click', mineForMaterials);
+        }
+
+        // Set up tab navigation
+        function setupTabs() {
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabId = tab.getAttribute('data-tab');
+                    
+                    // Update active tab
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    // Show correct content
+                    tabContents.forEach(content => {
+                        content.classList.remove('active');
+                        if (content.id === `${tabId}-tab`) {
+                            content.classList.add('active');
+                        }
+                    });
+                });
+            });
+        }
+
+        // Format extremely large numbers for display
+        function formatPower(power) {
+            if (power === Infinity) return "INFINITE";
+            if (power < 1000) return power.toString();
+            if (power < 1e6) return (power / 1e3).toFixed(2) + 'K';
+            if (power < 1e9) return (power / 1e6).toFixed(2) + 'M';
+            if (power < 1e12) return (power / 1e9).toFixed(2) + 'B';
+            if (power < 1e15) return (power / 1e12).toFixed(2) + 'T';
+            if (power < 1e18) return (power / 1e15).toFixed(2) + 'Qa';
+            if (power < 1e21) return (power / 1e18).toFixed(2) + 'Qi';
+            if (power < 1e24) return (power / 1e21).toFixed(2) + 'Sx';
+            if (power < 1e27) return (power / 1e24).toFixed(2) + 'Sp';
+            if (power < 1e30) return (power / 1e27).toFixed(2) + 'Oc';
+            if (power < 1e33) return (power / 1e30).toFixed(2) + 'No';
+            if (power < 1e36) return (power / 1e33).toFixed(2) + 'Dc';
+            if (power < 1e39) return (power / 1e36).toFixed(2) + 'Ud';
+            if (power < 1e42) return (power / 1e39).toFixed(2) + 'Dd';
+            if (power < 1e45) return (power / 1e42).toFixed(2) + 'Td';
+            return "INFINITE";
+        }
+
+        // Calculate power with infinite scaling and luck influence
+        function calculatePower() {
+            // Base random value influenced by luck multiplier
+            const baseRandom = Math.pow(Math.random(), 1 / gameState.luckMultiplier);
+            
+            // Exponential power scaling with extremely rare high values
+            let power;
+            if (baseRandom < 0.0000000001 * gameState.luckMultiplier) {
+                // INFINITE tier - only possible with extremely high luck
+                power = Infinity;
+            } else {
+                // Standard exponential scaling
+                const exponent = 3 + (baseRandom * 40); // 3 to 43 exponent range
+                power = Math.pow(10, exponent);
+                
+                // Add some randomness within the tier
+                power = power * (0.5 + Math.random() * 0.5);
+            }
+            
+            return power;
+        }
+
+        // Main roll function
+        function rollForPower() {
+            if (gameState.isRolling) return;
+            
+            gameState.isRolling = true;
+            rollBtn.disabled = true;
+            rollDisplay.classList.add('rolling');
+            
+            // Reset display during roll
+            powerLevel.textContent = "???";
+            powerTier.textContent = "Rolling...";
+            powerLevel.className = "power-level";
+            powerTier.className = "power-tier";
+            powerBar.style.width = '0%';
+            
+            // Simulate rolling animation
+            let rollCount = 0;
+            const maxRolls = 25;
+            const rollInterval = setInterval(() => {
+                const tempPower = calculatePower();
+                powerLevel.textContent = formatPower(tempPower);
+                updateTierDisplay(tempPower);
+                updatePowerBar(tempPower);
+                rollCount++;
+                
+                if (rollCount >= maxRolls) {
+                    clearInterval(rollInterval);
+                    finishRoll();
+                }
+            }, 100);
+        }
+
+        // Finish the roll and display results
+        function finishRoll() {
+            const power = calculatePower();
+            
+            gameState.currentPower = power;
+            gameState.totalRolls++;
+            gameState.totalPower += power;
+            gameState.rollHistory.unshift(power);
+            
+            // Gather materials based on power level
+            gatherMaterials(power);
+            
+            // Consume active charm duration
+            if (gameState.activeCharms.length > 0) {
+                gameState.activeCharms = gameState.activeCharms.filter(charm => {
+                    charm.duration--;
+                    return charm.duration > 0;
+                });
+                updateLuckMultiplier();
+            }
+            
+            if (power > gameState.highestPower || (power === Infinity && gameState.highestPower !== Infinity)) {
+                gameState.highestPower = power;
+            }
+            
+            // Update display with final result
+            powerLevel.textContent = formatPower(power);
+            updateTierDisplay(power);
+            updatePowerBar(power);
+            
+            // Create particle effect based on power level
+            createParticles(power);
+            
+            // Check for achievements
+            checkAchievements(power);
+            
+            // Update stats and history
+            updateStats();
+            updateHistory();
+            updateCharms();
+            updateMaterialsDisplay();
+            updateRecipesDisplay();
+            
+            // Re-enable roll button
+            setTimeout(() => {
+                gameState.isRolling = false;
+                rollBtn.disabled = false;
+                rollDisplay.classList.remove('rolling');
+            }, 1000);
+        }
+
+        // Mine for materials
+        function mineForMaterials() {
+            if (gameState.isMining) return;
+            
+            gameState.isMining = true;
+            mineBtn.disabled = true;
+            mineDisplay.style.animation = 'pulse 0.5s infinite alternate';
+            
+            // Reset display during mining
+            mineResult.textContent = "Mining...";
+            
+            // Simulate mining animation
+            let mineCount = 0;
+            const maxMines = 15;
+            const mineInterval = setInterval(() => {
+                mineCount++;
+                
+                if (mineCount >= maxMines) {
+                    clearInterval(mineInterval);
+                    finishMining();
+                }
+            }, 100);
+        }
+
+        // Finish mining and get materials
+        function finishMining() {
+            gameState.totalMines++;
+            
+            // Get materials based on current mining level
+            const probabilities = MINING_PROBABILITIES[gameState.miningLevel] || MINING_PROBABILITIES[1];
+            const minedMaterials = [];
+            
+            Object.entries(probabilities).forEach(([material, probability]) => {
+                if (Math.random() < probability) {
+                    gameState.materials[material] += 1;
+                    minedMaterials.push(MATERIALS[material].icon);
+                }
+            });
+            
+            // Level up mining occasionally
+            if (gameState.totalMines % 10 === 0 && gameState.miningLevel < 10) {
+                gameState.miningLevel++;
+                showMessage(`Mining level increased to ${gameState.miningLevel}!`);
+            }
+            
+            // Update display
+            if (minedMaterials.length > 0) {
+                mineResult.textContent = `Found: ${minedMaterials.join(' ')}`;
+            } else {
+                mineResult.textContent = "Found nothing this time";
+            }
+            
+            // Check for first mine achievement
+            if (!gameState.achievements.firstMine && gameState.totalMines === 1) {
+                unlockAchievement("First Mine", "You mined for materials for the first time!");
+                gameState.achievements.firstMine = true;
+            }
+            
+            // Update stats and displays
+            updateStats();
+            updateMaterialsDisplay();
+            updateRecipesDisplay();
+            updateCharms();
+            
+            // Re-enable mine button
+            setTimeout(() => {
+                gameState.isMining = false;
+                mineBtn.disabled = false;
+                mineDisplay.style.animation = 'none';
+            }, 1000);
+        }
+
+        // Gather materials based on power level (from rolling)
+        function gatherMaterials(power) {
+            // Base materials from any roll
+            if (Math.random() < 0.3) gameState.materials.copperCoin += 1;
+            if (Math.random() < 0.2) gameState.materials.cloverLeaf += 1;
+            
+            // Tier-based materials
+            if (power >= 1000 && Math.random() < 0.15) gameState.materials.silverShard += 1;
+            if (power >= 10000 && Math.random() < 0.1) gameState.materials.rabbitFur += 1;
+            if (power >= 100000 && Math.random() < 0.08) gameState.materials.diceSpot += 1;
+            if (power >= 1000000 && Math.random() < 0.06) gameState.materials.goldNugget += 1;
+            if (power >= 10000000 && Math.random() < 0.04) gameState.materials.horseshoeNail += 1;
+            if (power >= 100000000 && Math.random() < 0.03) gameState.materials.wishboneFragment += 1;
+            if (power >= 1000000000 && Math.random() < 0.02) gameState.materials.cosmicEssence += 1;
+            if (power >= 1000000000000 && Math.random() < 0.01) gameState.materials.phoenixAsh += 1;
+            if (power >= 1e18 && Math.random() < 0.005) gameState.materials.stardust += 1;
+            if (power === Infinity) {
+                gameState.materials.cosmicEssence += 5;
+                gameState.materials.phoenixAsh += 3;
+                gameState.materials.stardust += 2;
+            }
+        }
+
+        // Update the tier display based on power level
+        function updateTierDisplay(power) {
+            const tier = POWER_TIERS.find(t => power >= t.min && power <= t.max);
+            if (tier) {
+                powerLevel.className = `power-level ${tier.class}`;
+                powerTier.className = `power-tier ${tier.class}`;
+                powerTier.textContent = tier.name;
+            }
+        }
+
+        // Update power bar based on power level (logarithmic scale)
+        function updatePowerBar(power) {
+            if (power === Infinity) {
+                powerBar.style.width = '100%';
+                powerBar.style.background = 'linear-gradient(to right, #00ff00, #00ff00)';
+                return;
+            }
+            
+            // Use logarithmic scale for the bar
+            const logPower = Math.log10(power + 1);
+            const maxLog = 45; // 10^45 is essentially infinite for display purposes
+            const percentage = Math.min(100, (logPower / maxLog) * 100);
+            powerBar.style.width = `${percentage}%`;
+            
+            // Update bar color based on tier
+            const tier = POWER_TIERS.find(t => power >= t.min && power <= t.max);
+            if (tier) {
+                const color = getComputedStyle(document.documentElement).getPropertyValue(`--${tier.class.split('-')[1]}`);
+                powerBar.style.background = `linear-gradient(to right, ${color}, ${color}dd)`;
+            }
+        }
+
+        // Update game statistics
+        function updateStats() {
+            highestRoll.textContent = formatPower(gameState.highestPower);
+            totalRolls.textContent = gameState.totalRolls;
+            totalMines.textContent = gameState.totalMines;
+            rollCount.textContent = gameState.totalRolls;
+            mineCount.textContent = gameState.totalMines;
+            miningLevel.textContent = gameState.miningLevel;
+            
+            const avg = gameState.totalRolls > 0 
+                ? gameState.totalPower / gameState.totalRolls 
+                : 0;
+            averagePower.textContent = formatPower(avg);
+            
+            luckMultiplier.textContent = `x${gameState.luckMultiplier.toFixed(1)}`;
+        }
+
+        // Update charm buttons state
+        function updateCharms() {
+            Object.keys(LUCK_CHARMS).forEach(charmId => {
+                const charm = LUCK_CHARMS[charmId];
+                const button = document.getElementById(charmId);
+                
+                // Check if we have enough materials
+                let canCraft = true;
+                for (const [materialId, amount] of Object.entries(charm.materials)) {
+                    if (gameState.materials[materialId] < amount) {
+                        canCraft = false;
+                        break;
+                    }
+                }
+                
+                button.disabled = !canCraft || gameState.isRolling;
+                
+                // Update cost display
+                const costElement = document.getElementById(`${charmId}Cost`);
+                let costText = '';
+                for (const [materialId, amount] of Object.entries(charm.materials)) {
+                    costText += `${amount}${MATERIALS[materialId].icon} `;
+                }
+                costElement.textContent = costText.trim();
+            });
+        }
+
+        // Update materials display
+        function updateMaterialsDisplay() {
+            materialsGrid.innerHTML = '';
+            craftingMaterialsGrid.innerHTML = '';
+            
+            Object.entries(gameState.materials).forEach(([materialId, count]) => {
+                const material = MATERIALS[materialId];
+                
+                // For mining tab
+                const materialElement = document.createElement('div');
+                materialElement.className = 'material-item';
+                materialElement.innerHTML = `
+                    <div class="material-icon">${material.icon}</div>
+                    <div class="material-name">${material.name}</div>
+                    <div class="material-count">${count}</div>
+                `;
+                materialsGrid.appendChild(materialElement);
+                
+                // For crafting tab
+                const craftingMaterialElement = document.createElement('div');
+                craftingMaterialElement.className = 'material-item';
+                craftingMaterialElement.innerHTML = `
+                    <div class="material-icon">${material.icon}</div>
+                    <div class="material-name">${material.name}</div>
+                    <div class="material-count">${count}</div>
+                `;
+                craftingMaterialsGrid.appendChild(craftingMaterialElement);
+            });
+        }
+
+        // Update recipes display
+        function updateRecipesDisplay() {
+            recipesList.innerHTML = '';
+            
+            Object.entries(LUCK_CHARMS).forEach(([charmId, charm]) => {
+                const recipeElement = document.createElement('div');
+                recipeElement.className = 'recipe';
+                
+                let materialsHTML = '';
+                Object.entries(charm.materials).forEach(([materialId, amount]) => {
+                    const material = MATERIALS[materialId];
+                    const hasEnough = gameState.materials[materialId] >= amount;
+                    materialsHTML += `
+                        <div class="material-cost ${hasEnough ? '' : 'insufficient'}">
+                            <span class="material-icon">${material.icon}</span>
+                            <span>${amount}</span>
+                        </div>
+                    `;
+                });
+                
+                recipeElement.innerHTML = `
+                    <div class="recipe-header">
+                        <span class="recipe-icon">${document.getElementById(charmId).querySelector('.charm-icon').textContent}</span>
+                        <span>${document.getElementById(charmId).textContent.split(' ')[0]}</span>
+                    </div>
+                    <div class="recipe-materials">
+                        ${materialsHTML}
+                    </div>
+                    <button class="craft-btn" data-charm="${charmId}">Craft</button>
+                `;
+                
+                recipesList.appendChild(recipeElement);
+            });
+            
+            // Add event listeners to craft buttons
+            document.querySelectorAll('.craft-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const charmId = e.target.getAttribute('data-charm');
+                    craftCharm(charmId);
+                });
+            });
+        }
+
+        // Craft a charm
+        function craftCharm(charmId) {
+            const charm = LUCK_CHARMS[charmId];
+            
+            // Check if we have enough materials
+            for (const [materialId, amount] of Object.entries(charm.materials)) {
+                if (gameState.materials[materialId] < amount) {
+                    showMessage(`Not enough ${MATERIALS[materialId].name} to craft this charm!`);
+                    return;
+                }
+            }
+            
+            // Deduct materials
+            for (const [materialId, amount] of Object.entries(charm.materials)) {
+                gameState.materials[materialId] -= amount;
+            }
+            
+            // Activate the charm
+            useCharm(charmId);
+            
+            updateMaterialsDisplay();
+            updateRecipesDisplay();
+            updateCharms();
+        }
+
+        // Update luck multiplier based on active charms
+        function updateLuckMultiplier() {
+            // Start with base multiplier
+            let multiplier = 1.0;
+            
+            // Apply all active charms
+            gameState.activeCharms.forEach(charm => {
+                multiplier *= charm.luckMultiplier;
+            });
+            
+            gameState.luckMultiplier = multiplier;
+            
+            // Update display
+            if (multiplier > 1.0) {
+                const boostPercent = Math.round((multiplier - 1) * 100);
+                luckBoost.textContent = `Luck: +${boostPercent}%`;
+                luckBoost.style.display = 'block';
+            } else {
+                luckBoost.style.display = 'none';
+            }
+            
+            updateStats();
+        }
+
+        // Use a luck charm
+        function useCharm(charmId) {
+            const charm = LUCK_CHARMS[charmId];
+            
+            // Add to active charms
+            gameState.activeCharms.push({
+                id: charmId,
+                luckMultiplier: charm.effect.luckMultiplier,
+                duration: charm.effect.duration
+            });
+            
+            // Update multiplier
+            updateLuckMultiplier();
+            
+            // Show message
+            showMessage(`Activated ${document.getElementById(charmId).textContent.split(' ')[0]}! ${charm.description}`);
+            
+            updateCharms();
+        }
+
+        // Create particle effects based on power level
+        function createParticles(power) {
+            const particlesContainer = document.getElementById('particles');
+            particlesContainer.innerHTML = '';
+            
+            // More particles for higher power levels
+            const particleCount = power === Infinity ? 500 : Math.min(300, 10 + Math.floor(Math.log10(power + 1) * 15));
+            const tier = POWER_TIERS.find(t => power >= t.min && power <= t.max);
+            const color = tier ? getComputedStyle(document.documentElement).getPropertyValue(`--${tier.class.split('-')[1]}`) : '#ffffff';
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                // Random position
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 50 + Math.random() * 120;
+                const x = 160 + Math.cos(angle) * distance;
+                const y = 160 + Math.sin(angle) * distance;
+                
+                particle.style.left = `${x}px`;
+                particle.style.top = `${y}px`;
+                particle.style.backgroundColor = color;
+                
+                // Random size based on power
+                const size = power === Infinity ? 3 + Math.random() * 12 : 2 + Math.random() * 8;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                
+                particlesContainer.appendChild(particle);
+                
+                // Animate particle
+                const animation = particle.animate([
+                    { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+                    { transform: `translate(${Math.cos(angle) * 200}px, ${Math.sin(angle) * 200}px) scale(0)`, opacity: 0 }
+                ], {
+                    duration: 1000 + Math.random() * 1500,
+                    easing: 'cubic-bezier(0.215, 0.61, 0.355, 1)'
+                });
+                
+                animation.onfinish = () => {
+                    particle.remove();
+                };
+            }
+        }
+
+        // Check for achievements
+        function checkAchievements(power) {
+            // First roll
+            if (!gameState.achievements.firstRoll && gameState.totalRolls === 1) {
+                unlockAchievement("First Roll", "You made your first infinite power roll!");
+                gameState.achievements.firstRoll = true;
+            }
+            
+            // Power level milestones
+            const milestones = [
+                { value: 100, name: "Beyond Mortal", desc: "You reached power level 100!" },
+                { value: 1000, name: "Superhuman", desc: "You reached Superhuman power level (1K+)!" },
+                { value: 1e6, name: "Legendary", desc: "You reached Legendary power level (1M+)!" },
+                { value: 1e9, name: "Cosmic", desc: "You reached Cosmic power level (1B+)!" },
+                { value: 1e12, name: "Universal", desc: "You reached Universal power level (1T+)!" },
+                { value: 1e15, name: "Multiversal", desc: "You reached Multiversal power level (1Qa+)!" },
+                { value: 1e18, name: "Omnipotent", desc: "You reached Omnipotent power level (1Qi+)!" },
+                { value: 1e21, name: "Beyond", desc: "You reached Beyond power level (1Sx+)!" },
+                { value: 1e24, name: "Transcendent", desc: "You reached Transcendent power level (1Sp+)!" },
+                { value: Infinity, name: "INFINITE", desc: "You reached the INFINITE power level!" }
+            ];
+            
+            milestones.forEach(milestone => {
+                const key = `over${milestone.value === Infinity ? 'Infinite' : milestone.value}`;
+                if (!gameState.achievements[key] && power >= milestone.value) {
+                    unlockAchievement(milestone.name, milestone.desc);
+                    gameState.achievements[key] = true;
+                }
+            });
+        }
+
+        // Unlock an achievement
+        function unlockAchievement(title, description) {
+            achievementTitle.textContent = title;
+            achievementDesc.textContent = description;
+            achievementToast.classList.add('show');
+            
+            setTimeout(() => {
+                achievementToast.classList.remove('show');
+            }, 4000);
+        }
+
+        // Show a message
+        function showMessage(message) {
+            // Simple alert for now - could be replaced with a toast notification
+            alert(message);
+        }
+
+        // Initialize the game when the page loads
+        window.addEventListener('load', initGame);
+    </script>
+</body>
+</html>
