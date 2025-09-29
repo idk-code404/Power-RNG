@@ -60,9 +60,53 @@
             margin-bottom: 10px;
             background: linear-gradient(to right, var(--primary), var(--secondary), var(--epic), var(--legendary), var(--cosmic), var(--infinite));
             -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             background-clip: text;
-            color: transparent;
             text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+        
+        .auto-save-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 255, 0, 0.2);
+            border: 1px solid rgba(0, 255, 0, 0.5);
+            color: #00ff00;
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .auto-save-indicator.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .control-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
         }
         
         .tabs {
@@ -192,7 +236,7 @@
             letter-spacing: 1px;
         }
         
-        .roll-btn:hover {
+        .roll-btn:hover:not(:disabled) {
             transform: translateY(-3px);
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
         }
@@ -651,12 +695,16 @@
 <body>
     <div class="container">
         <header>
-            <h1>Infinite Power Level Roller - Mining & Crafting</h1>
+            <h1>Infinite Power Level Roller</h1>
             <p>Mine for materials, craft powerful charms, and reach INFINITE power!</p>
             <div class="difficulty-notice">
                 <strong>Warning:</strong> High power levels are extremely rare. Mine materials to craft powerful charms!
             </div>
         </header>
+        
+        <div class="controls">
+            <button class="control-btn" id="resetBtn">Reset Game</button>
+        </div>
         
         <div class="tabs">
             <button class="tab active" data-tab="rolling">Rolling</button>
@@ -825,6 +873,8 @@
         <div class="achievement-desc" id="achievementDesc">You rolled over 90 for the first time!</div>
     </div>
 
+    <div class="auto-save-indicator" id="autoSaveIndicator">Auto-saved</div>
+
     <script>
         // Game state
         const gameState = {
@@ -871,7 +921,8 @@
                 over1Dd: false,
                 over1Td: false,
                 infinite: false
-            }
+            },
+            version: "1.0.0"
         };
 
         // Power tiers with exponential scaling
@@ -996,9 +1047,13 @@
         const materialsGrid = document.getElementById('materialsGrid');
         const craftingMaterialsGrid = document.getElementById('craftingMaterialsGrid');
         const recipesList = document.getElementById('recipesList');
+        const resetBtn = document.getElementById('resetBtn');
+        const autoSaveIndicator = document.getElementById('autoSaveIndicator');
 
         // Initialize the game
         function initGame() {
+            loadGame(); // Auto-load on startup
+            
             updateStats();
             updateCharms();
             updateMaterialsDisplay();
@@ -1012,6 +1067,161 @@
             
             rollBtn.addEventListener('click', rollForPower);
             mineBtn.addEventListener('click', mineForMaterials);
+            resetBtn.addEventListener('click', resetGame);
+            
+            // Auto-save when leaving the page
+            window.addEventListener('beforeunload', autoSaveGame);
+            
+            // Auto-save every 30 seconds
+            setInterval(autoSaveGame, 30000);
+            
+            // Auto-save after user interactions (with debouncing)
+            setupAutoSaveListeners();
+            
+            console.log('Game initialized with auto-save enabled');
+        }
+
+        // Auto-save game to localStorage (silent version)
+        function autoSaveGame() {
+            try {
+                // Make sure we're saving the current state
+                const saveData = {
+                    ...gameState,
+                    isRolling: false, // Never save while rolling
+                    isMining: false   // Never save while mining
+                };
+                
+                localStorage.setItem('infinitePowerRoller', JSON.stringify(saveData));
+                showAutoSaveIndicator();
+            } catch (e) {
+                console.error('Auto-save failed:', e);
+            }
+        }
+
+        // Load game from localStorage on startup
+        function loadGame() {
+            try {
+                const saved = localStorage.getItem('infinitePowerRoller');
+                if (saved) {
+                    const loadedState = JSON.parse(saved);
+                    
+                    // Preserve current rolling/mining state
+                    const wasRolling = gameState.isRolling;
+                    const wasMining = gameState.isMining;
+                    
+                    // Merge loaded state with current state
+                    Object.keys(loadedState).forEach(key => {
+                        if (key !== 'isRolling' && key !== 'isMining') {
+                            gameState[key] = loadedState[key];
+                        }
+                    });
+                    
+                    // Restore rolling/mining state
+                    gameState.isRolling = wasRolling;
+                    gameState.isMining = wasMining;
+                    
+                    // Update all displays
+                    updateAllDisplays();
+                    
+                    console.log('Game auto-loaded successfully');
+                }
+            } catch (e) {
+                console.error('Auto-load failed:', e);
+            }
+        }
+
+        // Reset game
+        function resetGame() {
+            if (confirm('Are you sure you want to reset your game? All progress will be lost!')) {
+                // Reset to initial state but keep version
+                const version = gameState.version;
+                
+                Object.assign(gameState, {
+                    currentPower: 0,
+                    highestPower: 0,
+                    totalRolls: 0,
+                    totalMines: 0,
+                    totalPower: 0,
+                    rollHistory: [],
+                    isRolling: false,
+                    isMining: false,
+                    miningLevel: 1,
+                    luckMultiplier: 1.0,
+                    activeCharms: [],
+                    materials: {
+                        copperCoin: 5,
+                        silverShard: 2,
+                        goldNugget: 0,
+                        cloverLeaf: 3,
+                        rabbitFur: 1,
+                        horseshoeNail: 0,
+                        diceSpot: 2,
+                        wishboneFragment: 0,
+                        cosmicEssence: 0,
+                        phoenixAsh: 0,
+                        stardust: 0
+                    },
+                    achievements: {
+                        firstRoll: false,
+                        firstMine: false,
+                        over100: false,
+                        over1K: false,
+                        over1M: false,
+                        over1B: false,
+                        over1T: false,
+                        over1Q: false,
+                        over1Qi: false,
+                        over1Sx: false,
+                        over1Sp: false,
+                        over1Oc: false,
+                        over1No: false,
+                        over1Dc: false,
+                        over1Ud: false,
+                        over1Dd: false,
+                        over1Td: false,
+                        infinite: false
+                    },
+                    version: version
+                });
+                
+                // Update all displays
+                updateAllDisplays();
+                
+                // Auto-save reset state
+                autoSaveGame();
+                
+                showMessage('Game reset successfully!');
+            }
+        }
+
+        // Set up auto-save listeners for user interactions
+        function setupAutoSaveListeners() {
+            // Debounced auto-save function
+            let autoSaveTimeout;
+            const debouncedAutoSave = () => {
+                clearTimeout(autoSaveTimeout);
+                autoSaveTimeout = setTimeout(autoSaveGame, 1000);
+            };
+            
+            // Listen for changes that should trigger auto-save
+            // (These would be connected to actual game actions)
+        }
+
+        // Show auto-save indicator
+        function showAutoSaveIndicator() {
+            autoSaveIndicator.classList.add('show');
+            setTimeout(() => {
+                autoSaveIndicator.classList.remove('show');
+            }, 1500);
+        }
+
+        // Update all displays at once
+        function updateAllDisplays() {
+            updateStats();
+            updateCharms();
+            updateMaterialsDisplay();
+            updateRecipesDisplay();
+            updateHistory();
         }
 
         // Set up tab navigation
@@ -1156,7 +1366,10 @@
             updateMaterialsDisplay();
             updateRecipesDisplay();
             
-            // Re-enable roll button
+            // Auto-save after important actions
+            autoSaveGame();
+            
+            // Re-enable roll button after a short delay
             setTimeout(() => {
                 gameState.isRolling = false;
                 rollBtn.disabled = false;
@@ -1227,6 +1440,9 @@
             updateMaterialsDisplay();
             updateRecipesDisplay();
             updateCharms();
+            
+            // Auto-save after important actions
+            autoSaveGame();
             
             // Re-enable mine button
             setTimeout(() => {
@@ -1306,6 +1522,23 @@
             averagePower.textContent = formatPower(avg);
             
             luckMultiplier.textContent = `x${gameState.luckMultiplier.toFixed(1)}`;
+        }
+
+        // Update roll history display
+        function updateHistory() {
+            // Keep only last 10 rolls
+            if (gameState.rollHistory.length > 10) {
+                gameState.rollHistory = gameState.rollHistory.slice(0, 10);
+            }
+            
+            historyList.innerHTML = '';
+            gameState.rollHistory.forEach(roll => {
+                const tier = POWER_TIERS.find(t => roll >= t.min && roll <= t.max);
+                const historyItem = document.createElement('div');
+                historyItem.className = `history-item ${tier ? tier.class : ''}`;
+                historyItem.textContent = formatPower(roll);
+                historyList.appendChild(historyItem);
+            });
         }
 
         // Update charm buttons state
@@ -1431,6 +1664,9 @@
             updateMaterialsDisplay();
             updateRecipesDisplay();
             updateCharms();
+            
+            // Auto-save after important actions
+            autoSaveGame();
         }
 
         // Update luck multiplier based on active charms
